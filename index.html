@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mind Warrior (Mobile)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.1, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 10px;
+      font-size: 32px;
+      color: #0ff;
+    }
+
+    canvas {
+      background: #222;
+      border: 2px solid #555;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #score {
+      font-size: 16px;
+      margin: 5px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      position:relative;
+      left:-30px;
+      top:10px;
+    }
+
+    .btn {
+      border:none;
+      background:none;
+      color: white;
+      font-size: 20px;
+      padding: 10px 15px;
+      margin-left: 50px;
+      width: 60px;
+      touch-action: manipulation;
+       }
+.btn svg{
+  border-radius: 50px;
+  box-shadow: 0 0 10px #00ffff, 0 0 200px #00ffff;
+}
+    .shoot {
+      border-radius:50px;
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(255, 0, 0, 0.05));
+      font-weight: bold;
+      box-shadow: 0 0 10px #ff0033, 0 0 20px #ff0033;
+      height:60px;
+      border:solid 2px #f00;
+      position:relative;
+      top:50px;
+      left :20px;
+    }
+  canvas{
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    border: 2px solid transparent;
+border-image: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(0, 255, 255, 0.05)) 1;
+  }
+  .head{
+    position:relative;
+    left:15px;
+  }
+  .logo {
+    -webkit-filter: drop-shadow(0 0 0px #00ffff) drop-shadow(0 0 1px #00ffff);
+  filter: drop-shadow(0 0 1px #00ffff) drop-shadow(0 0 20px #00ffff);
+}
+  </style>
+</head>
+<body>
+  <div class="head"style="display: flex; align-items: center;">
+  <div>
+    <img class="logo"src="IMG_20250720_144050-removebg-preview.png" height="100" width="90" style="position: relative; left: -10px;">
+  </div>
+  <div>
+    <h1 style="margin: 0;">Mind Warrior</h1>
+    <p style="font-size: 12px; color: gray; font-weight: 100; margin: 0;">DESTROY DOUBT, CONQUER THE MIND</p>
+  </div>
+</div>
+  <p id="score">Score: 0</p>
+  <canvas id="gameCanvas" width="320" height="360"></canvas>
+
+  <div class="controls">
+    <div>
+      <button class="btn" ontouchstart="move('up')" ontouchend="stop()"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="11" stroke="#00ffff" stroke-width="2"/>
+  <path d="M12 6L6 12H10V18H14V12H18L12 6Z" fill="#00ffff"/>
+</svg></button><br>
+      <button class="btn" ontouchstart="move('left')" ontouchend="stop()"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="11" stroke="#00ffff" stroke-width="2"/>
+  <path d="M6 12L12 6V10H18V14H12V18L6 12Z" fill="#00ffff"/>
+</svg></button>
+      <button class="btn" ontouchstart="move('right')" ontouchend="stop()"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="11" stroke="#00ffff" stroke-width="2"/>
+  <path d="M18 12L12 6V10H6V14H12V18L18 12Z" fill="#00ffff"/>
+</svg></button><br>
+      <button class="btn" ontouchstart="move('down')" ontouchend="stop()"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="11" stroke="#00ffff" stroke-width="2"/>
+  <path d="M12 18L18 12H14V6H10V12H6L12 18Z" fill="#00ffff"/>
+</svg></button>
+    </div>
+    <div>
+      <button class="btn shoot" ontouchstart="shoot()">💥</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const player = { x: 150, y: 400, size: 20, speed: 4 };
+    const bullets = [];
+    const enemies = [];
+    let score = 0;
+    let currentDir = "";
+
+    const enemyTypes = ["Lust", "Porn", "Dopamine","Fear","Comfort","Do it Tommorow","You can't"];
+
+    function move(dir) {
+      currentDir = dir;
+    }
+
+    function stop() {
+      currentDir = "";
+    }
+
+    function shoot() {
+      bullets.push({ x: player.x + player.size / 2 - 2, y: player.y, size: 5, speed: 7 });
+    }
+
+    function spawnEnemy() {
+      const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+      enemies.push({
+        x: Math.random() * (canvas.width - 30),
+        y: Math.random() * 100,
+        size: 25,
+        speed: 1 + Math.random(),
+        type: type
+      });
+    }
+
+    function updatePlayer() {
+      switch (currentDir) {
+        case "up": player.y -= player.speed; break;
+        case "down": player.y += player.speed; break;
+        case "left": player.x -= player.speed; break;
+        case "right": player.x += player.speed; break;
+      }
+
+      // Limit player position within canvas
+player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+
+// Set text style
+ctx.fillStyle = "cyan";
+ctx.font = "20px Arial"; // Set font size and family
+ctx.shadowColor = "#00ffff";    // Red glow
+// Load image once
+const rocketImg = new Image();
+rocketImg.src = "583034-200.png"; // ✅ Replace with the path to your image
+player.size = 80;
+// Inside your drawing/rendering function
+ctx.drawImage(rocketImg, player.x, player.y, player.size, player.size);
+    }
+
+const bulletImg = new Image();
+bulletImg.src = "89c02f12-c3c4-427a-8b57-d9927a-unscreen.gif";
+
+bulletImg.onload = () => {
+  bulletImg.loaded = true; // Custom flag
+};
+
+// Update bullets function
+function updateBullets() {
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    let b = bullets[i];
+    b.y -= b.speed;
+    b.size = 20;
+    if (bulletImg.loaded) {
+      ctx.drawImage(bulletImg, b.x, b.y, b.size, b.size);
+    } else {
+      // Optional: draw a placeholder
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(b.x, b.y, b.size, b.size);
+    }
+
+    if (b.y < 0) bullets.splice(i, 1);
+  }
+}
+
+    function updateEnemies() {
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    let e = enemies[i];
+    const dx = player.x - e.x;
+    const dy = player.y - e.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    e.x += (dx / dist) * e.speed;
+    e.y += (dy / dist) * e.speed;
+
+    ctx.font = "bold 12px monospace";
+const text = e.type;
+ctx.font = "bold 12px monospace";
+
+// Measure text size
+const textMetrics = ctx.measureText(text);
+const padding = 6;
+const textWidth = textMetrics.width;
+const textHeight = 16; // approx. for 12px monospace
+
+// Box position
+const boxX = e.x;
+const boxY = e.y - textHeight - 10;
+
+// Draw glowing box
+ctx.shadowColor = "#ff0000"; // Blue glow
+ctx.shadowBlur = 10;
+ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
+ctx.strokeStyle = "#ff0000";
+ctx.lineWidth = 2;
+
+if (ctx.roundRect) {
+  ctx.beginPath();
+  ctx.roundRect(boxX - padding, boxY - padding, textWidth + padding * 2, textHeight + padding * 2, 6);
+  ctx.fill();
+  ctx.stroke();
+} else {
+  // Fallback if roundRect is not supported
+  ctx.fillRect(boxX - padding, boxY - padding, textWidth + padding * 2, textHeight + padding * 2);
+  ctx.strokeRect(boxX - padding, boxY - padding, textWidth + padding * 2, textHeight + padding * 2);
+}
+
+// Reset glow for text
+ctx.shadowBlur = 0;
+
+// Draw text
+ctx.fillStyle = "#ff0000";
+ctx.textAlign = "left";
+ctx.textBaseline = "top";
+ctx.fillText(text, boxX, boxY);
+// Reset shadow so it doesn't affect other drawings
+    // 🔥 Kill enemy if hit by bullet
+    for (let j = bullets.length - 1; j >= 0; j--) {
+      const b = bullets[j];
+      if (
+        b.x < e.x + e.size &&
+        b.x + b.size > e.x &&
+        b.y < e.y + e.size &&
+        b.y + b.size > e.y
+      ) {
+        enemies.splice(i, 1);
+        bullets.splice(j, 1);
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+        break;
+      }
+    }
+
+    // 💀 Check for collision with player
+    if (
+      player.x < e.x + e.size &&
+      player.x + player.size > e.x &&
+      player.y < e.y + e.size &&
+      player.y + player.size > e.y
+    ) {
+      gameOver();
+    }
+  }
+}
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updatePlayer();
+      updateBullets();
+      updateEnemies();
+      requestAnimationFrame(gameLoop);
+    }
+
+    setInterval(spawnEnemy, 2000);
+    gameLoop();
+  let gameRunning = true;
+
+function gameOver() {
+  gameRunning = false;
+  ctx.fillStyle = "white";
+  ctx.font = "20px monospace";
+  ctx.fillText("You're not dead yet !", canvas.width / 2 - 110, canvas.height / 2);
+}
+  </script>
+</body>
+</html>
